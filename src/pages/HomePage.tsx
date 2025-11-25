@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import api from "@/api/axios";
 import { User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import thumbnailPlaceholder from "../assets/images/thumbnail-placeholder.png";
 import iconSearch from "../assets/images/icon-search.svg";
 import iconHeart from "../assets/images/icon-heart.svg";
 import iconPlay from "../assets/images/icon-play.svg";
+import iconVector from "../assets/images/icon-vector.svg";
 
 type Game = {
   id: string;
@@ -40,8 +41,6 @@ export default function HomePage() {
         setLoading(true);
         const response = await api.get("/api/game/");
         console.log("Fetched games data:", response.data);
-        // Map the response data to ensure it matches our Game type if needed
-        // Assuming the API returns the structure as described but we might need to handle missing fields
         setGames(
           response.data.data.map(
             (g: Partial<Game>) =>
@@ -50,7 +49,6 @@ export default function HomePage() {
                 like_count: g.like_count || 0,
                 play_count: g.play_count || 0,
                 is_liked: g.is_liked || false,
-                // Ensure mandatory fields are present or provide defaults if needed
                 id: g.id || "",
                 name: g.name || "Untitled",
                 description: g.description || "",
@@ -71,39 +69,50 @@ export default function HomePage() {
     fetchGames();
   }, []);
 
-  const filteredAndSortedGames = games
-    .filter((game) =>
-      game.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-    .sort((a, b) => {
-      if (sortBy === "popular") {
-        return b.play_count - a.play_count;
-      }
-      if (sortBy === "most_liked") {
-        return b.like_count - a.like_count;
-      }
-      return 0;
-    });
+  const filteredAndSortedGames = useMemo(() => {
+    return games
+      .filter((game) =>
+        game.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+      .sort((a, b) => {
+        if (sortBy === "popular") {
+          return b.play_count - a.play_count;
+        }
+        if (sortBy === "most_liked") {
+          return b.like_count - a.like_count;
+        }
+        return 0;
+      });
+  }, [games, searchQuery, sortBy]);
 
   const handleLike = async (e: React.MouseEvent, gameId: string) => {
     e.stopPropagation();
+
+    const game = games.find((g) => g.id === gameId);
+    if (!game) return;
+
+    const newIsLiked = !game.is_liked;
+
     try {
       setGames((prev) =>
         prev.map((game) => {
           if (game.id === gameId) {
             return {
               ...game,
-              is_liked: !game.is_liked,
-              like_count: game.is_liked
-                ? game.like_count - 1
-                : game.like_count + 1,
+              is_liked: newIsLiked,
+              like_count: newIsLiked
+                ? game.like_count + 1
+                : game.like_count - 1,
             };
           }
           return game;
         }),
       );
 
-      await api.post(`/api/game/game-type/quiz/${gameId}/like`);
+      await api.post("/api/game/like", {
+        game_id: gameId,
+        is_like: newIsLiked,
+      });
     } catch (err) {
       console.error("Failed to like game:", err);
 
@@ -112,10 +121,10 @@ export default function HomePage() {
           if (game.id === gameId) {
             return {
               ...game,
-              is_liked: !game.is_liked,
-              like_count: game.is_liked
-                ? game.like_count - 1
-                : game.like_count + 1,
+              is_liked: !newIsLiked,
+              like_count: !newIsLiked
+                ? game.like_count + 1
+                : game.like_count - 1,
             };
           }
           return game;
@@ -288,19 +297,7 @@ export default function HomePage() {
                 setSortBy(sortBy === "most_liked" ? "latest" : "most_liked")
               }
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
+              <img src={iconVector} alt="Filter" className="w-4 h-4" />
             </Button>
           </div>
         </div>
