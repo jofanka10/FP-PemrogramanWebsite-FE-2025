@@ -11,6 +11,14 @@ import EditQuiz from "./pages/EditQuiz";
 import Quiz from "./pages/Quiz";
 import ProtectedRoute from "./routes/ProtectedRoutes";
 
+// TAMBAHAN: Import Sliding Puzzle Pages
+import SlidingPuzzleList from "./components/SlidingPuzzle/SlidingPuzzleList";
+import SlidingPuzzleGame from "./components/SlidingPuzzle/SlidingPuzzleGame";
+
+import CreateRankOrder from "./pages/rank-order/CreateRankOrder";
+import PlayRankOrder from "./pages/rank-order/PlayRankOrder";
+
+
 function App() {
   return (
     <>
@@ -20,6 +28,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/sandbox" element={<Sandbox />} />
         <Route path="/quiz/play/:id" element={<Quiz />} />
+
+        {/* TAMBAHAN: Sliding Puzzle Routes */}
+        <Route path="/create-rank-order" element={<CreateRankOrder />} />
+        <Route path="/rank-order/play/:id" element={<PlayRankOrder />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />

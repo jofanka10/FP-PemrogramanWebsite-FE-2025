@@ -58,9 +58,21 @@ export default function CreateProject() {
     fetchTemplates();
   }, []);
 
+  // const handleTemplateClick = (template: GameTemplate) => {
+  //   if (template.slug === "quiz") {
+  //     navigate("/create-quiz");
+  //   } else {
+  //     toast.error(`${template.name} template is coming soon!`, {
+  //       duration: 3000,
+  //     });
+  //   }
+  // };
+
   const handleTemplateClick = (template: GameTemplate) => {
-    if (template.slug === "quiz") {
-      navigate("/create-quiz");
+    const availableTemplates = ["quiz", "rank-order"];
+    
+    if (availableTemplates.includes(template.slug)) {
+      navigate(`/create-${template.slug}`);
     } else {
       toast.error(`${template.name} template is coming soon!`, {
         duration: 3000,
